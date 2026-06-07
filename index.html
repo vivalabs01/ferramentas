@@ -127,6 +127,51 @@ body::after{
 .go{color:var(--muted-2);flex:none;transition:.16s}
 .card:hover .go{color:var(--accent-a);transform:translate(2px,-2px)}
 
+/* featured / destaque card */
+.card.feat{
+  grid-column:1 / -1;flex-direction:row;align-items:center;gap:18px;padding:18px 20px;
+  border:1px solid transparent;
+  background:
+    linear-gradient(var(--card),var(--card)) padding-box,
+    linear-gradient(115deg,var(--accent-a),var(--accent-b)) border-box;
+  box-shadow:0 10px 40px -12px rgba(47,139,255,.35);
+}
+.card.feat::after{display:none}
+.card.feat::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(440px 130px at 4% 0%,rgba(98,214,90,.10),transparent 70%);
+}
+.card.feat:hover{transform:translateY(-3px);box-shadow:0 16px 54px -12px rgba(47,139,255,.5)}
+.feat-badge{
+  position:absolute;top:0;right:0;font-family:'JetBrains Mono';font-size:9.5px;
+  letter-spacing:.16em;font-weight:500;text-transform:uppercase;color:#06210b;
+  background:linear-gradient(115deg,var(--accent-a),var(--accent-b));
+  padding:4px 11px;border-bottom-left-radius:11px;
+}
+.feat-ico{
+  width:52px;height:52px;flex:none;border-radius:14px;display:grid;place-items:center;position:relative;
+  background:linear-gradient(160deg,rgba(47,139,255,.24),rgba(98,214,90,.18));
+  border:1px solid var(--border-hi);color:#dcebff;
+}
+.feat-ico svg{width:25px;height:25px}
+.live{position:absolute;top:-4px;right:-4px;width:11px;height:11px;border-radius:50%;background:var(--accent-b);border:2px solid var(--card)}
+.live::before{content:"";position:absolute;inset:-3px;border-radius:50%;background:var(--accent-b);opacity:.55;animation:pulse 1.9s ease-out infinite}
+@keyframes pulse{0%{transform:scale(.5);opacity:.6}100%{transform:scale(2.4);opacity:0}}
+.feat-body{flex:1;min-width:0}
+.feat-tag{font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.08em;color:var(--accent-b);text-transform:uppercase;margin-bottom:4px}
+.feat-name{font-family:'Bricolage Grotesque';font-weight:700;font-size:17px;letter-spacing:-.01em;line-height:1.2}
+.feat-desc{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.45;max-width:60ch}
+.feat-go{
+  flex:none;display:inline-flex;align-items:center;gap:7px;font-family:'Manrope';font-weight:600;font-size:13px;
+  color:#dcebff;border:1px solid var(--border-hi);border-radius:11px;padding:10px 15px;transition:.16s;white-space:nowrap;
+}
+.card.feat:hover .feat-go{border-color:var(--accent-a);background:rgba(47,139,255,.14)}
+.card.feat:hover .feat-go .go{color:inherit;transform:none}
+@media(max-width:620px){
+  .card.feat{flex-direction:column;align-items:flex-start;gap:14px}
+  .feat-go{width:100%;justify-content:center}
+}
+
 /* credentials block */
 .creds{display:flex;flex-direction:column;gap:7px;margin-top:2px}
 .cred{
@@ -226,6 +271,7 @@ const DATA = [
     subtitle:"Repositórios, ofertas e documentação central",
     icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
     tools:[
+      { name:"Monitoramento — Biblioteca/Meta", url:"https://viva-labs-production-60a9.up.railway.app/dashboard", featured:true, tag:"VIVA Labs · painel proprietário", desc:"Contagem de anúncios ativos por concorrente ao longo do tempo — quem está escalando e quando." },
       { name:"Swiper", url:"https://drive.google.com/drive/folders/1OhpHYQAL4CJ2WCAsrf5s4eqxL3DcJjwD" },
       { name:"Ofertas", url:"https://drive.google.com/drive/folders/1cMRoekPLT8aMzTjTR3d1s0xluaLWYD9r" },
       { name:"Centro Pixel Meta", url:"https://docs.google.com/document/d/1bKBuExEkXuW-M5gHLBOk8ayTY2w-jZj3lZYVy2K2gGg/edit?usp=sharing" },
@@ -297,7 +343,21 @@ function credRow(c){
   </div>`;
 }
 
+function featuredCard(t){
+  return `<a class="card feat" href="${t.url}" target="_blank" rel="noopener noreferrer" data-search="${esc((t.name+' '+host(t.url)).toLowerCase())}">
+    <span class="feat-badge">★ Destaque</span>
+    <div class="feat-ico">${activityIco}<span class="live"></span></div>
+    <div class="feat-body">
+      ${t.tag?`<div class="feat-tag">${esc(t.tag)}</div>`:''}
+      <div class="feat-name">${esc(t.name)}</div>
+      ${t.desc?`<div class="feat-desc">${esc(t.desc)}</div>`:''}
+    </div>
+    <span class="feat-go">Abrir painel ${goIco}</span>
+  </a>`;
+}
+
 function toolCard(t){
+  if(t.featured) return featuredCard(t);
   const credsHtml = t.creds ? `<div class="creds" onclick="event.preventDefault();event.stopPropagation();">${t.creds.map(credRow).join('')}</div>` : '';
   const letter = t.name.trim()[0].toUpperCase();
   return `<a class="card" href="${t.url}" target="_blank" rel="noopener noreferrer" data-search="${esc((t.name+' '+host(t.url)).toLowerCase())}">
@@ -328,6 +388,7 @@ const copyIco = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" str
 const eyeIco  = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
 const okIco   = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m20 6-11 11-5-5"/></svg>';
 const dlIco   = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>';
+const activityIco = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>';
 
 DATA.forEach((sec,i)=>{
   const isSkill = !!sec.skills;
